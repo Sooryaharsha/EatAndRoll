@@ -95,8 +95,8 @@ class userProfile(models.Model):
     cover_photo = models.ImageField(
         upload_to="users/cover_photo", blank=True, null=True
     )
-    address_line_1 = models.CharField(max_length=50, blank=True, null=True)
-    address_line_2 = models.CharField(max_length=50, blank=True, null=True)
+    address = models.CharField(max_length=250, blank=True, null=True)
+
     country = models.CharField(max_length=15, blank=True, null=True)
     state = models.CharField(max_length=15, blank=True, null=True)
     city = models.CharField(max_length=15, blank=True, null=True)
@@ -106,8 +106,8 @@ class userProfile(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     modified_at = models.DateTimeField(auto_now=True)
 
-    def full_address(self):
-        return f"{self.address_line_1},{ self.address_line_2}"
+    # def full_address(self):
+    #     return f"{self.address_line_1},{ self.address_line_2}"
 
     def __str__(self):
         return self.user.email
