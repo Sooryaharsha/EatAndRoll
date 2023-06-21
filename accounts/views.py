@@ -54,7 +54,9 @@ def registerUser(request):
 
             # send verification email
 
-            send_verification_email(request, user)
+            mail_subject = "Please activate your account"
+            email_template = "accounts/emails/account_verification_email.html"
+            send_verification_email(request, user, mail_subject, email_template)
 
             messages.success(request, "Your account has been registered successfully !")
             return redirect("registerUser")
@@ -205,7 +207,7 @@ def forgot_password(request):
             email_template = "accounts/emails/reset_password_email.html"
             send_verification_email(request, user, mail_subject, email_template)
             messages.success(
-                request, "Password resset link has been sent to your email address"
+                request, "Password reset link has been sent to your email address"
             )
             return redirect("login")
         else:
