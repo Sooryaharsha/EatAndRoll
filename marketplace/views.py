@@ -8,12 +8,15 @@ from menu.models import Category, FoodItem
 
 from vendor.models import Vendor, OpeningHour
 from django.db.models import Prefetch
-from .models import Cart
+
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 from django.contrib.auth.decorators import login_required
 
 from datetime import date, datetime
+from orders.forms import OrderForm
+
+from .models import Cart
 
 
 def marketplace(request):
@@ -53,7 +56,6 @@ def vendor_detail(request, vendor_slug):
         "cart_items": cart_items,
         "opening_hours": opening_hours,
         "current_opening_hours": current_opening_hours,
-       
     }
     return render(request, "marketplace/vendor_detail.html", context)
 
@@ -184,3 +186,29 @@ def delete_cart(request, cart_id):
 
         else:
             return JsonResponse({"status": "Failed", "message": "Invalid request"})
+
+@login_required(login_url='login')
+def checkout(request):
+    cart_items = Cart.objects.filter(user=request.user).order_by("created_at")
+    cart_count = cart_items.count()
+    if cart_count <= 0:
+        return redirect("marketplace")
+
+    user_profile = userProfile.objects.get(user=request.user)
+    default_values = {
+        "first_name": request.user.first_name,
+        "last_name": request.user.last_name,
+        "phone": request.user.phone_number,
+        "email": request.user.email,
+        "address": user_profile.address,
+        "country": user_profile.country,
+        "state": user_profile.state,
+        "city": user_profile.city,
+        "pin_code": user_profile.pin_code,
+    }
+    form = OrderForm(initial=default_values)
+    context = {
+        "form": form,
+        "cart_items": cart_items,
+    }
+    return render(request, "marketplace/checkout.html", context)
