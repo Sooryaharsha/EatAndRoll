@@ -4,12 +4,15 @@ from marketplace.models import Cart
 from marketplace.context_processors import get_cart_amounts
 from .forms import OrderForm
 from .models import Order, OrderedFood, Payment
-import simplejson as json
 from .utils import generate_order_number
 from django.http import HttpResponse, JsonResponse
 from accounts.utils import send_notification
 from django.contrib.auth.decorators import login_required
+import razorpay
+from foodOnline_main.settings import RZP_KEY_ID, RZP_KEY_SECRET
 
+
+client = razorpay.Client(auth=(RZP_KEY_ID, RZP_KEY_SECRET))
 
 # Create your views here.
 
@@ -47,9 +50,25 @@ def place_order(request):
             order.save()
             order.order_number = generate_order_number(order.id)
             order.save()
+
+            # Razorpay payment
+
+            DATA = {
+                "amount": float(order.total) * 100,
+                "currency": "INR",
+                "receipt": "receipt #" + order.order_number,
+                "notes": {"key1": "value3", "key2": "value2"},
+            }
+
+            rzp_order = client.order.create(data=DATA)
+            rzp_order_id = rzp_order['id']
+
             context = {
                 "order": order,
                 "cart_items": cart_items,
+                "rzp_order_id": rzp_order_id,
+                "RZP_KEY_ID":RZP_KEY_ID,
+                "rzp_amount": float(order.total)*100,
             }
 
             return render(request, "order/place_order.html", context)
@@ -119,7 +138,7 @@ def payments(request):
         for i in cart_items:
             if i.fooditem.vendor.user.email not in to_emails:
                 to_emails.append(i.fooditem.vendor.user.email)
-        
+
         context = {
             "order": order,
             "to_email": to_emails,
@@ -152,7 +171,7 @@ def order_complete(request):
         subtotal = 0
         for item in ordered_food:
             subtotal += item.price * item.quantity
-            
+
         tax_data = json.loads(order.tax_data)
         context = {
             "order": order,
