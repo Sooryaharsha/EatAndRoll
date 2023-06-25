@@ -1,5 +1,7 @@
 from django.http import HttpResponse
 from django.shortcuts import redirect, render
+
+from orders.models import Order
 from .form import UserForm
 from .models import User, userProfile
 from django.contrib import messages, auth
@@ -186,7 +188,13 @@ def myAccount(request):
 @login_required(login_url="login")
 @user_passes_test(check_role_customer)
 def custDashboard(request):
-    return render(request, "accounts/custDashboard.html")
+    orders = Order.objects.filter(user=request.user, is_ordered=True)
+    recent_orders = orders[:5]
+    context = {
+        "orders": recent_orders,
+        "orders_count": orders.count(),
+    }
+    return render(request, "accounts/custDashboard.html", context)
 
 
 @login_required(login_url="login")
