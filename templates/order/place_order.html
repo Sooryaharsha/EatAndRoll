@@ -100,7 +100,7 @@
                                             <span id="total">{{grand_total}}</span>
                                         </span>
                                     </li>
-                                    {% if order.payment_method == "Paypal"%}
+                                    {% if order.payment_method == "PayPal"%}
                                     {% comment %} Paypal check out button {% endcomment %}
                                     <div id="paypal-button-container"></div>
                                     {%elif order.payment_method == "RazorPay"%}
@@ -154,21 +154,22 @@
 
 
     paypal.Buttons({
-      createOrder: function(data, actions) {
-        // This function sets up the details of the transaction, including the amount and line item details.
-        return actions.order.create({
-          purchase_units: [{
-            amount: {
-              value: grand_total
-            }
-          }]
-        });
-      },
+        createOrder: function(data, actions) {
+            console.log("Helo")
+          // This function sets up the details of the transaction, including the amount and line item details.
+          return actions.order.create({
+            purchase_units: [{
+              amount: {
+                value: grand_total
+              }
+            }]
+          });
+        },
       onApprove: function(data, actions) {
         // This function captures the funds from the transaction.
         return actions.order.capture().then(function(orderData) {
           // This function shows a transaction success message to your buyer
-          //console.log(orderData)
+          console.log(orderData)
           var transaction = orderData.purchase_units[0].payments.captures[0];
 
           var transaction_id = transaction.id
@@ -237,6 +238,7 @@
     //send the data to payment view to store in the database
 
     function sendTransaction(transaction_id,payment_method,status){
+        console.log(transaction_id,payment_method,status);
         $.ajax({
             type: 'POST',
             url : url,
