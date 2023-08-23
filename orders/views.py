@@ -132,7 +132,7 @@ def payments(request):
 
         print(order_number, transaction_id, payment_method, status)
 
-        order = Order.objects.get(order_number=order_number)
+        order = Order.objects.get(user=request.user,order_number=order_number)
         print(order)
         payment = Payment(
             user=request.user,

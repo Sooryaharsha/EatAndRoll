@@ -148,7 +148,7 @@
 
     var grand_total = "{{grand_total}}"
     var url = "{%url 'payments'%}"
-    var order_number = {{order.order_number}}
+    var order_number = "{{order.order_number}}"
     const csrftoken = getCookie('csrftoken');
     var order_complete ="{%url 'order_complete' %}"
 
